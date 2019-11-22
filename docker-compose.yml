@@ -1,0 +1,11 @@
+---
+
+version: "3.7"
+
+services:
+  chat:
+    image: rocketchat/rocket.chat:${ROCKET_CHAT_VERSION_TAG}
+    depends_on:
+      - mongo
+  mongo:
+    image: mongo:${MONGO_DB_VERSION_TAG}
