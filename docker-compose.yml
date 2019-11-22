@@ -9,3 +9,10 @@ services:
       - mongo
   mongo:
     image: mongo:${MONGO_DB_VERSION_TAG}
+  # mongoのclient
+  mongo-express:
+    image: mongo-express:${MONGO_DB_EXPRESS_VERSION_TAG}
+    depends_on:
+      - mongo
+    ports:
+      - "8081:8081"

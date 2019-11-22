@@ -4,5 +4,11 @@ config:
 setup:
 	cp env.sample .env
 
-bash: setup
-	docker-compose run --rm --service-ports chat bash
+up: setup
+	docker-compose up
+
+bash:
+	docker-compose exec chat bash
+
+down:
+	docker-compose down
