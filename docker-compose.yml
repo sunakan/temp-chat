@@ -4,23 +4,28 @@ version: "3.7"
 
 services:
   chat:
+    # 5秒毎に接続 try(30回まで)
     image: rocketchat/rocket.chat:${ROCKET_CHAT_VERSION_TAG}
-    depends_on:
-      - mongo
-  mongo:
-    image: mongo:${MONGO_DB_VERSION_TAG}
+    command: bash -c 'for i in `seq 1 30`; do node main.js && s=$$? && break || s=$$?; echo "Tried $$i times. Waiting 5 秒..."; sleep 5; done; (exit $$s)'
+    restart: unless-stopped
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: password
-
-  # mongoのclient
-  # ADMINUSERのNAME/PASSは合わせる
-  mongo-express:
-    image: mongo-express:${MONGO_DB_EXPRESS_VERSION_TAG}
+      - ROOT_URL=http://0.0.0.0:3000
+      - MONGO_URL=mongodb://mongo:27017/rocketchat
+      - MONGO_OPLOG_URL=mongodb://mongo:27017/local
     depends_on:
       - mongo
     ports:
-      - "8081:8081"
-    environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: root
-      ME_CONFIG_MONGODB_ADMINPASSWORD: password
+      - 3000:3000
+
+  # replSetはrocketChat側の要求
+  mongo:
+    image: mongo:${MONGO_DB_VERSION_TAG}
+    restart: unless-stopped
+    command: mongod --replSet rs0
+
+  # 5秒毎に初期化 try、うまくいったら終了(30回retry)
+  mongo-init-replica:
+    image: mongo:${MONGO_DB_VERSION_TAG}
+    command: 'bash -c "for i in `seq 1 30`; do mongo mongo/rocketchat --eval \"rs.initiate({ _id: ''rs0'', members: [ { _id: 0, host: ''localhost:27017'' } ]})\" && s=$$? && break || s=$$?; echo \"Tried $$i times. Waiting 5 秒...\"; sleep 5; done; (exit $$s)"'
+    depends_on:
+      - mongo
