@@ -4,6 +4,9 @@ config:
 setup:
 	cp env.sample .env
 
+build:
+	docker-compose build
+
 up: setup
 	docker-compose up
 

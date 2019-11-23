@@ -5,7 +5,11 @@ version: "3.7"
 services:
   chat:
     # 5秒毎に接続 try(30回まで)
-    image: rocketchat/rocket.chat:${ROCKET_CHAT_VERSION_TAG}
+    build:
+      context: .
+      dockerfile: Dockerfile.chat
+      args:
+        ROCKET_CHAT_VERSION_TAG: ${ROCKET_CHAT_VERSION_TAG}
     command: bash -c 'for i in `seq 1 30`; do node main.js && s=$$? && break || s=$$?; echo "Tried $$i times. Waiting 5 秒..."; sleep 5; done; (exit $$s)'
     restart: unless-stopped
     environment:
