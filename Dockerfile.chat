@@ -1,5 +1,8 @@
 ARG ROCKET_CHAT_VERSION_TAG
 FROM rocketchat/rocket.chat:${ROCKET_CHAT_VERSION_TAG}
 USER root
-RUN apt-get update && apt-get install -y vim
+RUN apt-get update
+RUN apt-get install -y vim
+RUN apt-get install -y tree
+RUN apt-get install -y procps
 USER rocketchat
